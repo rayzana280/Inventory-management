@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import {firestore} from '@/firebase'
 import { Box, Button, Modal, Stack, TextField, Typography } from "@mui/material";
 import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc } from "firebase/firestore";
+import Link from "next/link";
+import Takepic from "./components/Takepic";
 
 
 export default function Home() {
@@ -12,12 +14,15 @@ export default function Home() {
   interface Inventory {
     name: string;
     quantity: number;
-  }
+  };
 
-  const [inventory, setInventory] = useState<Inventory[]>([])
-  const [open, setOpen] = useState(false)
-  const [itemName, setItemName] = useState('')
+  const [inventory, setInventory] = useState<Inventory[]>([]);
+  const [open, setOpen] = useState(false);
+  const [itemName, setItemName] = useState('');
   
+  const [turnOnCamera, setTurnOnCamera] = useState(false)
+  
+  //update data
   // snapshot is snapshot of collection 
   const updateInventory = async () => {
     const snapshot = query(collection(firestore, "inventory")) // getting the collection in firebase
@@ -31,12 +36,14 @@ export default function Home() {
       })
     })
     setInventory(inventoryList)
-  }
+  };
+
+  //remove data
 
   const removeItem = async (item:any) => { // see wassup with the typescript 
     const docRef = doc(collection(firestore, "inventory"), item) //gets docref if it exist
     const docSnap = await getDoc(docRef)
-    console.log(item) //typescript fix with this 
+    console.log(item)
     if (docSnap.exists()){
       const {quantity} = docSnap.data() // getting the count or quantity from data 
       if (quantity === 1){
@@ -47,12 +54,14 @@ export default function Home() {
     }
 
     await updateInventory()
-  }
+  };
+
+  //add data
 
   const addItem = async (item:any) => { // see wassup with the typescript 
-    const docRef = doc(collection(firestore, "inventory"), item) //gets docref if it exist
+    const docRef = doc(collection(firestore, "inventory"), item) 
     const docSnap = await getDoc(docRef)
-    console.log(item) //typescript fix with this 
+    console.log(item) 
     if (docSnap.exists()){
       const {quantity} = docSnap.data() // getting the count or quantity from data 
       await setDoc(docRef, {quantity: quantity + 1})
@@ -61,47 +70,46 @@ export default function Home() {
     }
 
     await updateInventory()
-  }
+  };
+  
+
+  // update data once uploda load 
 
   useEffect(()=>{
     updateInventory()
-  }, [])
+  }, []);
 
-  const handleOpen = ()=> setOpen(true)
-  const handleClose = () => setOpen(false)
+  const handleOpen = ()=> setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  function buttonClicked (){
+    console.log("been clicked")
+    setTurnOnCamera(!turnOnCamera)
+  }  
+
+  function readingData(data:any){
+    console.log(data)
+    if(data.includes("box") === true){
+      addItem("boxes")
+      console.log("match")
+    }else{
+      console.log("no match")
+    }
+  }
   
   return (
   <>
-  <Box 
-  width="100vw" 
-  height="100vh" 
-  display="flex" 
-  justifyContent="center" 
-  alignItems="center"
-  gap={2}
-  flexDirection="column"
-  >
+  {turnOnCamera ? null : <Button variant="outlined" onClick={()=>{
+    setTurnOnCamera(!turnOnCamera)
+    console.log(turnOnCamera)
+  }}>Turn On Camera</Button>}
+  {turnOnCamera ? <Takepic buttonClicked={buttonClicked} readingData={readingData}/> : null}
+  {turnOnCamera ? null : <Box width="100vw" height="100vh" display="flex" justifyContent="center" alignItems="center" gap={2} flexDirection="column">
     <Modal open={open} onClose={handleClose}>
-      <Box 
-      position="absolute"
-      top="50%"
-      left="50%"
-      width={400}
-      bgcolor="white"
-      border="2px solid #000"
-      boxShadow={24}
-      p={4}
-      display="flex"
-      flexDirection="column"
-      gap={3}
-      sx={{transform: "translate(-50%,-50%)",}}
-      >
+      <Box position="absolute" top="50%" left="50%" width={400} bgcolor="white" border="2px solid #000" boxShadow={24} p={4} display="flex" flexDirection="column" gap={3} sx={{transform: "translate(-50%,-50%)",}}>
         <Typography variant="h6"> Add Item</Typography>
         <Stack width="100%" direction="row" spacing={2}>
-          <TextField 
-          variant="outlined"
-          fullWidth
-          value={itemName}
+          <TextField variant="outlined" fullWidth value={itemName}
           onChange={(e) => {
             setItemName(e.target.value)
           }}
@@ -149,7 +157,7 @@ export default function Home() {
       }
     </Stack>
     </Box>
-  </Box>
+  </Box>}
   </>
   );
-}
+};
