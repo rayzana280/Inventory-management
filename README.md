@@ -35,3 +35,7 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 # Inventory-management
+
+
+
+Just keep in mind I'm going to be removing my API Keys and you should have your own this is just a demo to lead to your own path. If you trying to use if works I will have a video upload with my own API KEYS to show people tht it works.
